@@ -436,3 +436,7 @@ This project is distributed under the MIT License. See `LICENSE` for details.
 ## Disclaimer
 
 This package is research software. It is provided without warranty and should be validated independently before use in academic, financial, or production settings.
+
+## Development note
+
+This package was developed by the author as part of thesis-related research. AI-assisted tools were used during development for code review, documentation, debugging support, and packaging guidance. All implementation choices, testing, validation, and responsibility for the code remain with the author.
