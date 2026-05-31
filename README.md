@@ -1,72 +1,35 @@
-# ipca-state
+# ipca
 
-[![Documentation](https://github.com/kbaranowsky/ipca-state/actions/workflows/docs.yml/badge.svg)](https://github.com/kbaranowsky/ipca-state/actions/workflows/docs.yml)
-[![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+`ipca` is a Python package for preparing asset-level panel data and estimating Instrumented Principal Component Analysis (IPCA) models, including state-conditioned IPCA utilities.
 
-`ipca-state` is a Python package for preparing asset-level panel data and estimating Instrumented Principal Component Analysis (IPCA) models, including state-conditioned IPCA extensions.
+The GitHub repository may be named `ipca-state`, but the installed Python import package is named `ipca`.
 
-The package provides tools for:
-
-- preparing characteristics and returns data for IPCA estimation;
-- constructing cross-sectionally rank-standardized instruments;
-- optionally creating state-interacted characteristics for state-conditioned IPCA;
-- estimating restricted and unrestricted IPCA models;
-- computing total and predictive \(R^2\);
-- running bootstrap tests for pricing errors and characteristic relevance;
-- comparing forecast performance with Diebold-Mariano style utilities.
-
-The repository name is `ipca-state`, while the Python import package is `sc_ipca`.
-
-## Documentation
-
-Public API documentation is generated with `pdoc` and deployed through GitHub Pages.
-
-Documentation URL:
-
-```text
-https://kbaranowsky.github.io/ipca-state/
-```
-
-The documentation workflow is located at:
-
-```text
-.github/workflows/docs.yml
-```
-
-Documentation is rebuilt automatically on every push to the `main` branch.
-
-## Installation
-
-### Install from GitHub
-
-The package is not assumed to be published on PyPI. Install it directly from GitHub:
+## Installation from GitHub
 
 ```bash
 python3 -m pip install git+https://github.com/kbaranowsky/ipca-state.git
 ```
 
-If you use Anaconda, Spyder, or another environment manager, install into the same Python environment that you use to run your code:
-
-```bash
-/path/to/your/python -m pip install git+https://github.com/kbaranowsky/ipca-state.git
-```
-
-For example:
-
-```bash
-/Users/your-name/anaconda3/bin/python -m pip install git+https://github.com/kbaranowsky/ipca-state.git
-```
-
-### Upgrade an existing installation
+To reinstall the newest version from GitHub:
 
 ```bash
 python3 -m pip install --upgrade --force-reinstall git+https://github.com/kbaranowsky/ipca-state.git
 ```
 
-### Development installation
+If you use Anaconda, Spyder, or another environment manager, install into the exact interpreter that runs your code:
 
-Clone the repository and install it in editable mode:
+```bash
+/path/to/python -m pip install git+https://github.com/kbaranowsky/ipca-state.git
+```
+
+You can find that interpreter from Python with:
+
+```python
+import sys
+print(sys.executable)
+```
+
+## Development installation
 
 ```bash
 git clone https://github.com/kbaranowsky/ipca-state.git
@@ -74,39 +37,62 @@ cd ipca-state
 python3 -m pip install -e ".[dev]"
 ```
 
-Editable installation is recommended when modifying the package source code.
+## Public API
 
-## Requirements
+Use:
 
-The package requires Python 3.10 or newer.
-
-Core dependencies:
-
-- `numpy`
-- `pandas`
-- `scipy`
-- `joblib`
-- `statsmodels`
-
-Development and documentation dependencies are available through optional extras:
-
-```bash
-python3 -m pip install -e ".[dev]"
-python3 -m pip install -e ".[docs]"
+```python
+from ipca import IPCA, Instruments
 ```
 
-## Quick start
+For compatibility with your original lowercase class name, this also works:
+
+```python
+from ipca import ipca
+```
+
+`IPCA` is an alias to the original `ipca` class.
+
+## Quick import test
+
+After installation, run:
+
+```bash
+python3 -c "from ipca import IPCA, Instruments, ipca; print(IPCA, Instruments, ipca)"
+```
+
+Or run the package tests:
+
+```bash
+pytest
+```
+
+## Repository structure
+
+```text
+ipca-state/
+├── src/
+│   └── ipca/
+│       ├── __init__.py
+│       ├── instruments.py
+│       └── ipca.py
+├── tests/
+│   └── test_imports.py
+├── examples/
+│   └── basic_import.py
+├── LICENSE
+├── README.md
+├── pyproject.toml
+└── requirements.txt
+```
+
+## Basic usage
 
 ```python
 import pandas as pd
-from sc_ipca import Instruments, IPCA
+from ipca import Instruments, IPCA
 
 # Raw asset-level panel data.
-# The dataframe must contain:
-# - a date column;
-# - an asset identifier column;
-# - a returns column;
-# - one or more firm characteristic columns.
 data = pd.read_csv("asset_level_panel.csv")
 
 characteristics = ["bm", "mom12m", "size"]
@@ -143,294 +129,30 @@ model.fit(
 model.short_summary()
 ```
 
-## State-conditioned IPCA example
-
-To construct state-interacted characteristics, provide a two-column state-variable dataframe and set `make_state_interactions=True`.
-
-The first column should contain dates. The second column should contain the state variable.
-
-```python
-import pandas as pd
-from sc_ipca import Instruments, IPCA
-
-data = pd.read_csv("asset_level_panel.csv")
-state_variable = pd.read_csv("state_variable.csv")
-
-characteristics = ["bm", "mom12m", "size"]
-
-builder = Instruments(
-    data=data,
-    characteristics=characteristics,
-    returns="ret",
-    date="date",
-    permno="permno",
-    state_variable=state_variable,
-)
-
-Z_state, R_state = builder.prepare_data(
-    addConstant=True,
-    filterMonths=True,
-    make_state_interactions=True,
-    printSummary=True,
-)
-
-state_model = IPCA(
-    Z=Z_state,
-    R=R_state,
-    K=3,
-    alpha=False,
-)
-
-state_model.fit()
-state_model.short_summary()
-```
-
-## Data format
-
-### Asset-level panel data
-
-The main input to `Instruments` is a `pandas.DataFrame` with at least the following columns:
-
-| Column type | Description |
-|---|---|
-| Date column | Observation date. Dates are normalized to month-end internally. |
-| Asset identifier | Asset identifier, such as `permno`. |
-| Returns column | Asset return series. |
-| Characteristic columns | Firm-level characteristics used as instruments. |
-
-Example:
-
-| date | permno | ret | bm | mom12m | size |
-|---|---:|---:|---:|---:|---:|
-| 2020-01-31 | 10001 | 0.012 | 0.45 | 0.08 | 10.2 |
-| 2020-01-31 | 10002 | -0.004 | 0.37 | -0.02 | 11.4 |
-
-### Risk-free rate
-
-The optional `risk_free` argument should be a two-column dataframe:
-
-1. date column;
-2. risk-free rate column.
-
-The risk-free rate should be expressed in decimal form, not percentage points.
-
-Example:
-
-| date | rf |
-|---|---:|
-| 2020-01-31 | 0.001 |
-
-If provided, the risk-free rate is subtracted from asset returns.
-
-### State variable
-
-The optional `state_variable` argument should be a two-column dataframe:
-
-1. date column;
-2. state variable column.
-
-Example:
-
-| date | state |
-|---|---:|
-| 2020-01-31 | 0.75 |
-
-When `make_state_interactions=True`, characteristics are interacted with the state variable after cross-sectional standardization.
-
-## Public API
-
-The recommended imports are:
-
-```python
-from sc_ipca import Instruments, IPCA
-```
-
-For compatibility with the original lowercase class name, the package may also expose:
-
-```python
-from sc_ipca import ipca
-```
-
-## Main components
-
-### `Instruments`
-
-Prepares raw asset-level data for IPCA estimation.
-
-Main responsibilities:
-
-- date normalization to month-end;
-- optional filtering of months with insufficient valid assets;
-- optional filtering of assets with insufficient return history;
-- cross-sectional rank standardization of firm characteristics;
-- optional risk-free rate subtraction;
-- construction of dictionaries of characteristics matrices `Z` and return vectors `R`;
-- optional construction of state-interacted characteristics.
-
-### `IPCA`
-
-Estimates IPCA models based on prepared `Z` and `R` inputs.
-
-Main functionality:
-
-- restricted IPCA estimation;
-- unrestricted IPCA estimation with pricing-error terms;
-- latent and observed factor support;
-- alternating least squares estimation;
-- total and predictive \(R^2\);
-- managed-portfolio fit measures;
-- bootstrap tests for pricing errors;
-- bootstrap tests for characteristic relevance;
-- state-level fit diagnostics;
-- forecasting and forecast-comparison utilities.
-
-## Building documentation locally
-
-Install the documentation dependencies:
+## Build documentation locally
 
 ```bash
 python3 -m pip install -e ".[docs]"
+pdoc ipca -o site
 ```
 
-Build the documentation:
-
-```bash
-pdoc sc_ipca -o site
-```
-
-Open:
-
-```text
-site/index.html
-```
-
-## Running tests
-
-Install development dependencies:
-
-```bash
-python3 -m pip install -e ".[dev]"
-```
-
-Run tests:
-
-```bash
-pytest
-```
-
-## Repository structure
-
-```text
-ipca-state/
-├── .github/
-│   └── workflows/
-│       └── docs.yml
-├── src/
-│   └── sc_ipca/
-│       ├── __init__.py
-│       ├── instruments.py
-│       └── ipca.py
-├── tests/
-│   └── test_imports.py
-├── .gitignore
-├── LICENSE
-├── README.md
-└── pyproject.toml
-```
+Then open `site/index.html`.
 
 ## Troubleshooting
 
-### `ModuleNotFoundError: No module named 'sc_ipca'`
+### `ModuleNotFoundError: No module named 'ipca'`
 
-The package is installed in a different Python environment than the one running your code.
+Usually this means the package was installed into a different Python environment than the one you are using.
 
-Check your active Python:
+Check your current Python executable:
 
 ```python
 import sys
 print(sys.executable)
 ```
 
-Then install using that exact interpreter:
+Then install using that exact executable:
 
 ```bash
 /path/to/that/python -m pip install git+https://github.com/kbaranowsky/ipca-state.git
 ```
-
-### Spyder users
-
-In Spyder, first check the Python executable:
-
-```python
-import sys
-print(sys.executable)
-```
-
-Then install from macOS Terminal using that exact executable:
-
-```bash
-/path/from/spyder/sys.executable -m pip install git+https://github.com/kbaranowsky/ipca-state.git
-```
-
-Restart the Spyder kernel after installation.
-
-### Import name versus repository name
-
-The GitHub repository is named:
-
-```text
-ipca-state
-```
-
-The Python package is imported as:
-
-```python
-import sc_ipca
-```
-
-This is normal. Python package names often differ from repository names.
-
-## Research background
-
-This package implements tools for Instrumented Principal Component Analysis following Kelly, Pruitt, and Su (2019), with extensions for state-conditioned specifications developed in the context of the author's thesis research.
-
-## References
-
-Baranowski, K. (2026). *State Conditioning in Instrumented Principal Component Analysis: Do Market States Change Characteristics Based Risk Exposures?* Unpublished Bachelor thesis, Erasmus School of Economics, Erasmus University Rotterdam.
-
-Kelly, B. T., Pruitt, S., and Su, Y. (2019). Characteristics are covariances: A unified model of risk and return. *Journal of Financial Economics*, 134(3), 501–524.
-
-## Citation
-
-If you use this package in academic work, cite the underlying methodology:
-
-```bibtex
-@article{kelly2019characteristics,
-  title={Characteristics are covariances: A unified model of risk and return},
-  author={Kelly, Bryan T. and Pruitt, Seth and Su, Yinan},
-  journal={Journal of Financial Economics},
-  volume={134},
-  number={3},
-  pages={501--524},
-  year={2019}
-}
-```
-
-You may also cite this repository:
-
-```bibtex
-@software{baranowski_ipca_state,
-  author = {Baranowski, Kornel},
-  title = {ipca-state: Instrumented Principal Component Analysis with State-Conditioned Extensions},
-  url = {https://github.com/kbaranowsky/ipca-state},
-  year = {2026}
-}
-```
-
-## License
-
-This project is distributed under the MIT License. See `LICENSE` for details.
-
-## Disclaimer
-
-This package is research software. It is provided without warranty and should be validated independently before use in academic, financial, or production settings.
