@@ -7,8 +7,6 @@ Instrumented Principal Component Analysis models.
 from .instruments import Instruments
 from .ipca import ipca
 
-# Public class-style alias. The implementation class is still named ``ipca``
-# for backward compatibility with your existing code.
 IPCA = ipca
 
 __all__ = ["Instruments", "IPCA", "ipca"]
