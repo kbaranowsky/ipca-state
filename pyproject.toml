@@ -4,7 +4,7 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "sc-ipca"
+name = "ipca"
 version = "0.1.0"
 description = "Instrumented Principal Component Analysis and State Conditioned IPCA utilities."
 readme = "README.md"
