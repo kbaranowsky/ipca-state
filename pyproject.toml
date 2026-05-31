@@ -1,1 +1,62 @@
 
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sc-ipca"
+version = "0.1.0"
+description = "Instrumented Principal Component Analysis and State Conditioned IPCA utilities."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [
+  { name = "Kornel Baranowski" }
+]
+keywords = [
+  "asset pricing",
+  "instrumented principal component analysis",
+  "ipca",
+  "state-conditioned ipca",
+  "finance",
+  "econometrics"
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Information Analysis"
+]
+dependencies = [
+  "numpy>=1.24",
+  "pandas>=2.0",
+  "scipy>=1.10",
+  "joblib>=1.3",
+  "statsmodels>=0.14"
+]
+
+[project.optional-dependencies]
+docs = ["pdoc>=15"]
+dev = [
+  "pdoc>=15",
+  "pytest>=8",
+  "build>=1",
+  "twine>=5"
+]
+
+[project.urls]
+Homepage = "https://github.com/kbaranowsky/ipca-state"
+Documentation = "https://<kbaranowsky>.github.io/sc-ipca/"
+Repository = "https://github.com/kbaranowsky/ipca-state"
+Issues = "https://github.com/kbaranowsky/ipca-state/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
