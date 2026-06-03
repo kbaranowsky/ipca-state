@@ -1898,6 +1898,14 @@ class ipca(object):
         oos_total_ssr = 0.0
         oos_predictive_ssr = 0.0
         oos_sst = 0.0
+
+
+        oos_managed_total_ssr = 0.0
+        oos_managed_predictive_ssr = 0.0
+        oos_managed_sst = 0.00
+      
+
+
         oos_dates = []
         evaluation_dates = []
 
@@ -2002,6 +2010,20 @@ class ipca(object):
                 oos_sst += sst
                 evaluation_dates.append(t_next)
 
+                ## Added this bc i actually want at the end the manged portoflio model git measures
+                managed_fit_total = sigmaZ_t.dot(Gamma_full).dot(f_full)
+                managed_fit_pred =  sigmaZ_t.dot(Gamma_full).dot(lambda_full)
+
+
+                managed_error_total = x_next - managed_fit_total
+                managed_error_pred = x_next - managed_fit_pred
+
+                oos_managed_total_ssr += float(managed_error_total.dot(managed_error_total))
+                oos_managed_predictive_ssr += float(managed_error_pred.dot(managed_error_pred))
+                oos_managed_sst += float(x_next.dot(x_next))
+
+
+
             if printUpdates and (i == 1 or i % 20 == 0):
                 print(f"Finished {i - initial_window + 1} out of {forecasts_no} forecasts.")
         
@@ -2009,11 +2031,18 @@ class ipca(object):
         oos_total_r2 = 1.0 - oos_total_ssr / oos_sst
         oos_predictive_r2 = 1.0 - oos_predictive_ssr / oos_sst
 
+        oos_managed_total_r2 = 1.0 - oos_managed_total_ssr / oos_managed_sst
+        oos_managed_pred_r2 = 1.0 - oos_managed_predictive_ssr / oos_managed_sst
+
+    
+
         if printUpdates:
             print(f" OOS total R2: {100 * oos_total_r2}")
             print(f" OOS predictive R2: {100 * oos_predictive_r2}")
         
-        results = {"total_R2": oos_total_r2, "predictive_R2": oos_predictive_r2, "oos_dates": oos_dates, "squared_errors_total": sq_err_total, "evaluation_dates": evaluation_dates,
+        results = {"total_R2": oos_total_r2, "predictive_R2": oos_predictive_r2, "oos_dates": oos_dates,
+                    "managed_total_R2": oos_managed_total_r2, "managed_predictive_R2": oos_managed_pred_r2,
+                     "squared_errors_total": sq_err_total, "evaluation_dates": evaluation_dates,
                     "squared_errors_predictive": sq_err_predictive, "factor_returns": factor_returns, "lambda_series": lambda_series}
 
         return results
