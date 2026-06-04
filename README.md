@@ -14,7 +14,7 @@ The package provides tools for:
 - estimating restricted and unrestricted IPCA models
 - computing total and predictive \(R^2\)
 - running bootstrap tests for pricing errors and characteristic relevance
-- comparing forecast performance with Diebold-Mariano style test
+- comparing forecast performance with Diebold-Mariano test
 
 The repository name is `ipca-state`, while the Python import package is `ipca`.
 
@@ -54,57 +54,52 @@ Core dependencies:
 - `statsmodels`
 
 
-## Quick start
+## Example use
 
 ```python
 import pandas as pd
 from ipca import Instruments, IPCA
 
-# Raw asset-level panel data.
-# The dataframe must contain:
-# - a date column;
-# - an asset identifier column;
-# - a returns column;
-# - one or more firm characteristic columns.
+# Raw asset-level panel data from the authors of Kelly et al. (2019)
 data = pd.read_csv("asset_level_panel.csv")
 
-characteristics = ["bm", "mom12m", "size"]
+characteristics = ["beta", "mom", "size"]
 
 builder = Instruments(
-    data=data,
-    characteristics=characteristics,
-    returns="ret",
-    date="date",
-    permno="permno",
+    data = data,
+    characteristics = characteristics,
+    returns = "ret",
+    date = "date",
+    permno =  "permno",
 )
 
 Z, R = builder.prepare_data(
-    addConstant=True,
-    filterMonths=True,
-    make_state_interactions=False,
-    printSummary=True,
+    addConstant = True,
+    filterMonths = True,
+    make_state_interactions = False,
+    printSummary = True,
 )
 
 model = IPCA(
-    Z=Z,
-    R=R,
-    K=3,
-    alpha=False,
+    Z = Z,
+    R = R,
+    K = 3,
+    alpha = False,
 )
 
 model.fit(
-    tol=1e-6,
-    max_iter=1000,
-    printTime=True,
-    printInformation=True,
+    tol = 1e-6,
+    max_iter = 1000,
+    printTime = True,
+    printInformation = True,
 )
 
 model.short_summary()
 ```
 
-## State Conditioned IPCA (SC-IPCA) example
+## State Conditioned IPCA (SC-IPCA) example use
 
-To construct state-interacted characteristics, provide a two-column state-variable dataframe and set `make_state_interactions=True`.
+To construct state interacted characteristics, provide a two column state variable dataframe and set `make_state_interactions = True`.
 
 The first column should contain dates. The second column should contain the state variable.
 
@@ -115,32 +110,32 @@ from ipca import Instruments, IPCA
 data = pd.read_csv("asset_level_panel.csv")
 state_variable = pd.read_csv("state_variable.csv")
 
-characteristics = ["bm", "mom12m", "size"]
+characteristics = ["beta", "mom", "size"]
 
 builder = Instruments(
-    data=data,
-    characteristics=characteristics,
-    returns="ret",
-    date="date",
-    permno="permno",
-    state_variable=state_variable,
+    data = data,
+    characteristics =  characteristics,
+    returns = "ret",
+    date = "date",
+    permno = "permno",
+    state_variable = state_variable,
 )
 
 Z_state, R_state = builder.prepare_data(
-    addConstant=True,
-    filterMonths=True,
-    make_state_interactions=True,
-    printSummary=True,
+    addConstant = True,
+    filterMonths = True,
+    make_state_interactions = True,
+    printSummary = True,
 )
 
 state_model = IPCA(
-    Z=Z_state,
-    R=R_state,
-    K=3,
-    alpha=False,
+    Z = Z_state,
+    R = R_state,
+    K = 3,
+    alph a = False,
 )
 
-state_model.fit()
+state_model.fit(tol = 1e-6, max_iter = 1000, printTime = True, printInformation = True)
 state_model.short_summary()
 ```
 
@@ -170,28 +165,22 @@ The recommended imports are:
 from ipca import Instruments, IPCA
 ```
 
-For compatibility with the original lowercase class name, the package also exposes:
-
-```python
-from ipca import ipca
-```
-
 
 ## Main components
 
 ### `Instruments`
 
-Prepares raw asset-level data for IPCA estimation.
+Prepares raw asset level data for IPCA estimation.
 
 Main responsibilities:
 
-- date normalization to month-end;
+- date normalization to month end;
 - optional filtering of months with insufficient valid assets;
 - optional filtering of assets with insufficient return history;
 - cross-sectional rank standardization of firm characteristics;
 - optional risk-free rate subtraction;
-- construction of dictionaries of characteristics matrices `Z` and return vectors `R`;
-- optional construction of state-interacted characteristics.
+- construction of dictionaries of characteristics matrices `Z` and return series `R`;
+- optional construction of state interacted characteristics.
 
 ### `IPCA`
 
@@ -200,15 +189,15 @@ Estimates IPCA models based on prepared `Z` and `R` inputs.
 Main functionality:
 
 - restricted IPCA estimation;
-- unrestricted IPCA estimation with pricing-error terms;
+- unrestricted IPCA estimation with pricing error terms;
 - latent and observed factor support;
 - alternating least squares estimation;
 - total and predictive \(R^2\);
-- managed-portfolio fit measures;
+- managed portfolio fit measures;
 - bootstrap tests for pricing errors;
 - bootstrap tests for characteristic relevance;
-- state-level fit diagnostics;
-- forecasting and forecast-comparison utilities.
+- state level fit diagnostics;
+- forecasting and forecast comparison utilities.
 
 
 ## Repository structure
@@ -233,7 +222,6 @@ ipca-state/
 
 ## References
 
-Baranowski, K. (2026). *State Conditioning in Instrumented Principal Component Analysis: Do Market States Change Characteristics Based Risk Exposures?* Unpublished Bachelor thesis, Erasmus School of Economics, Erasmus University Rotterdam.
 
 Kelly, B. T., Pruitt, S., and Su, Y. (2019). Characteristics are covariances: A unified model of risk and return. *Journal of Financial Economics*, 134(3), 501–524.
 
@@ -241,8 +229,8 @@ Kelly, B. T., Pruitt, S., and Su, Y. (2019). Characteristics are covariances: A 
 
 ## Disclaimer
 
-This package is research software. It is provided without warranty and should be validated independently before use in academic, financial, or production settings.
+This package is research software. It is provided without warranty and should be validated independently before use in academic, financial, or production settings. See LICENSE for details.
 
 ## Development note
 
-This package was developed by me as part of my bachelor thesis. AI-assisted tools were used during development for code review, documentation support, debugging support, and packaging guidance according to the requirements and limitations of Thesis Manual 2026. All implementation choices, testing, validation, and responsibility for the code remain with me.
+This package was developed by me as part of my bachelor thesis. AI tools such as ChatGPT of Claude were used during development for code review, documentation support, debugging support, and packaging guidance according to the requirements and limitations of Thesis Manual 2026. All implementation choices, testing, validation, and responsibility for the code remain with me. For suggestinons on the package improvement please email: kornel.baranowski@gmail.com
